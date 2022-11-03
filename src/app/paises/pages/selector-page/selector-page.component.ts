@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import { switchMap, tap } from 'rxjs/operators'
+import { PaisSmall } from '../../interfaces/paises.interfaces';
 
 import { PaisesService } from '../../services/paises.service';
 
@@ -19,8 +20,9 @@ export class SelectorPageComponent implements OnInit {
   })
 
   //llenar selectores
-  continentes: string [] = [];
-  paises: any;
+  continentes: string []    = [];
+  paises     : PaisSmall[]  = [];
+  fronteras  : string [] = [];
 
   constructor( private fb: FormBuilder,
                private paisesService: PaisesService ) { }
@@ -41,6 +43,7 @@ export class SelectorPageComponent implements OnInit {
     //     })
 
 
+    //Cuando cambia el continente
     this.miFormulario.get('continente')?.valueChanges
       .pipe(
         //con el tap me permite recibir el continente, como no me interesa lo pongo as _  (el _ es un estandar ) y al saber que cambia, reseteo el valor del pais
@@ -48,9 +51,9 @@ export class SelectorPageComponent implements OnInit {
           this.miFormulario.get('pais')?.reset('');
         }),
         //con el switchMap capturamos el observable y devolvemos un nuevo observable (modificamos la salida del observable original a paises)
-        switchMap( continente => this.paisesService.getPaisesPorContinenete( continente) )
-      )
-      .subscribe( paises =>{
+        switchMap( continente => this.paisesService.getPaisesPorContinenete( continente ) )
+        )
+        .subscribe( paises =>{
         console.log(paises);
         this.paises = paises
       });
@@ -59,11 +62,15 @@ export class SelectorPageComponent implements OnInit {
       //Cuando cambia el país
       this.miFormulario.get('pais')?.valueChanges
         .pipe(
+          tap( ( _ ) => {
+            this.fronteras = [];
+            this.miFormulario.get('frontera')?.reset('');
+          }),
 
-          // switchMap( codigoPais => this.paisesService.getPaisPorCodigo( 'PER' ))
+          switchMap( codigoPais => this.paisesService.getPaisPorCodigo( codigoPais ) )
         )
-        .subscribe( codigo =>{
-          console.log(codigo);
+        .subscribe( pais => {
+          this.fronteras = pais?.borders || [];
         })
   }
 
