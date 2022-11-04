@@ -24,6 +24,11 @@ export class SelectorPageComponent implements OnInit {
   paises     : PaisSmall[]  = [];
   fronteras  : string [] = [];
 
+
+  //UI
+  cargando: boolean = false;
+  
+
   constructor( private fb: FormBuilder,
                private paisesService: PaisesService ) { }
 
@@ -47,15 +52,16 @@ export class SelectorPageComponent implements OnInit {
     this.miFormulario.get('continente')?.valueChanges
       .pipe(
         //con el tap me permite recibir el continente, como no me interesa lo pongo as _  (el _ es un estandar ) y al saber que cambia, reseteo el valor del pais
-        tap( ( _ ) =>{
+        tap((_) => {
           this.miFormulario.get('pais')?.reset('');
+          this.cargando = true;
         }),
         //con el switchMap capturamos el observable y devolvemos un nuevo observable (modificamos la salida del observable original a paises)
-        switchMap( continente => this.paisesService.getPaisesPorContinenete( continente ) )
-        )
-        .subscribe( paises =>{
-        console.log(paises);
-        this.paises = paises
+        switchMap(continente => this.paisesService.getPaisesPorContinenete(continente))
+      )
+      .subscribe(paises => {
+        this.paises = paises;
+        this.cargando = false;
       });
 
 
@@ -63,14 +69,15 @@ export class SelectorPageComponent implements OnInit {
       this.miFormulario.get('pais')?.valueChanges
         .pipe(
           tap( ( _ ) => {
-            this.fronteras = [];
             this.miFormulario.get('frontera')?.reset('');
+            this.cargando = true;
           }),
 
           switchMap( codigoPais => this.paisesService.getPaisPorCodigo( codigoPais ) )
         )
         .subscribe( pais => {
           this.fronteras = pais?.borders || [];
+          this.cargando = false;
         })
   }
 
