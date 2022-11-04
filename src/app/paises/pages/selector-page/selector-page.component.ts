@@ -22,7 +22,8 @@ export class SelectorPageComponent implements OnInit {
   //llenar selectores
   continentes: string []    = [];
   paises     : PaisSmall[]  = [];
-  fronteras  : string [] = [];
+  // fronteras  : string [] = []; //cuando mostrabamos los border (código de frontera )
+  fronteras  : PaisSmall [] = []; //vamos a mostrar el name del país
 
 
   //UI
@@ -73,10 +74,12 @@ export class SelectorPageComponent implements OnInit {
             this.cargando = true;
           }),
 
-          switchMap( codigoPais => this.paisesService.getPaisPorCodigo( codigoPais ) )
+          switchMap( codigoPais => this.paisesService.getPaisPorCodigo( codigoPais ) ),
+          switchMap( pais => this.paisesService.getPaisesPorBordes(pais?.borders!) )
         )
-        .subscribe( pais => {
-          this.fronteras = pais?.borders || [];
+        .subscribe( paises => {
+          // this.fronteras = pais?.borders || []; //para mostrar solo el codigo
+          this.fronteras = paises;
           this.cargando = false;
         })
   }
